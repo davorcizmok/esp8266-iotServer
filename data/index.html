@@ -2,64 +2,43 @@
 <html>
   <head>
     <title>AsyncWebServer</title>
-	<style>
-	html, body {
-		margin: 0;
-		padding: 0;
-		width: 100vw;
-		height: 100vh;
-		overflow: hidden;
-	}
-	
-	#code {
-		background-color: black;
-		color: white;
-		height: 90vh;
-		width: 100vw;
-	}
-	#input {
-		height: 10vh;
-		width: 100vw;
-		border: 2px solid black;
-		font-size: 26px;
-		color: white;
-		background-color: #000000;
-		padding: 0 20px;
-	}
-	</style>
+    <meta charset="utf-8">
   </head>
   <body>
-    <div id="code"></div>
-	<input id="input">
-	
-	<script>	
-	var Debug = {
-		log: function(x){
-			document.getElementById("code").innerHTML += x+"<br>";
-		}
-	};
-	
-	document.getElementById("input").addEventListener('keydown', function(e) {
-		if (e.keyCode === 13) {
-			Debug.log("# "+this.value);
-			sendCommand(this.value);
-			
-			this.value = "";
-		}
-	});
-	
-	function sendCommand(command){
-	
-		var xhr = new XMLHttpRequest();
-		xhr.onreadystatechange = function() {
-			if (this.readyState == 4 && this.status == 200) {
-				Debug.log(xhr.responseText);
-			}
-		};
-		xhr.open("GET", "api/"+encodeURIComponent(command), true);
-		xhr.send();
-		
-	}
-	</script>
+    <input type="number" min="0" max="200" step="2" id="newAlarmTemp" value="100">
+    <input type="button" id="setAlarm" value="Alarm setzen">
+    <br>
+    <p>Alarm: <span id="alarm"></span></p>
+    <p>Temperatur: <span id="temp"></span></p>
+
+  	<script>
+      document.getElementById("setAlarm").addEventListener("click", function setAlarm(){
+        var newAlarmTemp = document.getElementById("newAlarmTemp").value;;
+        sendCommand("setAlarm?temp="+newAlarmTemp);
+      });
+
+    	function sendCommand(command, cb){
+    		var xhr = new XMLHttpRequest();
+    		xhr.onreadystatechange = function() {
+    			if (this.readyState == 4 && this.status == 200) {
+    				if(cb){
+              cb(xhr.responseText);
+            }
+    			}
+    		};
+    		xhr.open("GET", "api/"+encodeURIComponent(command), true);
+    		xhr.send();
+    	}
+
+      setInterval(function(){
+        sendCommand("getAlarm", function(alarm){
+          document.getElementById("alarm").textContent = alarm+"°";
+        });
+
+        sendCommand("getTemp", function(temp){
+          document.getElementById("temp").textContent = temp+"°";
+        });
+      }, 1000);
+  	</script>
   </body>
 </html>

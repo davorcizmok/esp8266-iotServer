@@ -91,6 +91,9 @@ const char * hostName = "esp8266";
 //const char* http_username = "user";
 //const char* http_password = "password";
 
+// int alarmTemp;
+// int temp;
+
 void setup(){
   Serial.begin(115200);
   Serial.setDebugOutput(true);
@@ -137,9 +140,31 @@ void setup(){
 
   //server.addHandler(new SPIFFSEditor(http_username,http_password));
 
+  int alarmTemp = 0;
+  int temp = 0;
+
   server.on("/api/heap", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
+  server.on("/api/millis", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", String(millis()));
+  });
+  server.on("/api/setAlarm", HTTP_GET, [&alarmTemp](AsyncWebServerRequest *request){
+    if(request->hasParam("temp")){
+      String newAlarmTemp = request->getParam("temp")->value();
+      alarmTemp = newAlarmTemp.toInt();
+      request->send(200, "text/plain", newAlarmTemp);
+    } else {
+      request->send(200, "text/plain", "false");
+    }
+  });
+  server.on("/api/getAlarm", HTTP_GET, [&alarmTemp](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", String(alarmTemp));
+  });
+  server.on("/api/getTemp", HTTP_GET, [&temp](AsyncWebServerRequest *request){
+    request->send(200, "text/plain", String(temp));
+  });
+ 
 
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
 
@@ -198,7 +223,7 @@ void setup(){
   });*/
   /*server.onRequestBody([](AsyncWebServerRequest *request, uint8_t *data, size_t len, size_t index, size_t total){
     if(!index){
-      Serial.printf("BodyStart: %u\n", total);
+      Serial.printf("Body-Start: %u\n", total);
     }
     Serial.printf("%s", (const char*)data);
     if(index + len == total){
@@ -210,4 +235,5 @@ void setup(){
 
 void loop(){
   //ArduinoOTA.handle();
+  //temp = analogRead(A0);
 }
