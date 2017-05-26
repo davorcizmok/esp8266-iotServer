@@ -3,8 +3,12 @@
   <head>
     <title>AsyncWebServer</title>
     <meta charset="utf-8">
+    <style>
+
+    </style>
   </head>
   <body>
+    <div id="alarmVisual"></div>
     <input type="number" min="0" max="200" step="2" id="newAlarmTemp" value="100">
     <input type="button" id="setAlarm" value="Alarm setzen">
     <br>
@@ -30,15 +34,47 @@
     		xhr.send();
     	}
 
+      var temp = 20;
+      var alarm = 100;
+      var alarming = false;
+
       setInterval(function(){
-        sendCommand("getAlarm", function(alarm){
-          document.getElementById("alarm").textContent = alarm+"°";
+        sendCommand("getAlarm", function(newAlarm){
+          document.getElementById("alarm").textContent = newAlarm+"°";
+          alarm = parseInt(newAlarm);
         });
 
-        sendCommand("getTemp", function(temp){
-          document.getElementById("temp").textContent = temp+"°";
+        sendCommand("getTemp", function(newTemp){
+          document.getElementById("temp").textContent = newTemp+"°";
+          temp = parseInt(newTemp);
         });
+
+        if(temp >= alarm){
+          Alarm.start();
+        } else {
+          Alarm.stop();
+        }
       }, 1000);
+
+      var Alarm = {
+        alarming: false,
+        color: "green",
+        init: function(){
+          setInterval(function(){
+            if(Alarm.alarming){
+              Alarm.color = Alarm.color == "green" ? "red" : "green";
+              document.body.style.backgroundColor = Alarm.color;
+            }
+          }, 1000/8);
+        },
+        start: function(){
+          Alarm.alarming = true;
+        },
+        stop: function(){
+          Alarm.alarming = false;
+        }
+      };
+      Alarm.init();
   	</script>
   </body>
 </html>

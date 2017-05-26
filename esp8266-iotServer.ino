@@ -10,6 +10,9 @@ const char* ssid = "Wlan ICS B";
 const char* password = "wlan4you#";
 const char * hostName = "esp8266";
 
+int alarmTemp = 100;
+int temp = 25;
+
 void setup(){
   Serial.begin(115200);
   Serial.setDebugOutput(true);
@@ -25,10 +28,7 @@ void setup(){
   }
   
   SPIFFS.begin();
-
-  int alarmTemp = 0;
-  int temp = 0;
-
+ 
   server.on("/api/heap", HTTP_GET, [](AsyncWebServerRequest *request){
     request->send(200, "text/plain", String(ESP.getFreeHeap()));
   });
@@ -50,10 +50,9 @@ void setup(){
   server.on("/api/getTemp", HTTP_GET, [&temp](AsyncWebServerRequest *request){
     request->send(200, "text/plain", String(temp));
   });
- 
-
+  
   server.serveStatic("/", SPIFFS, "/").setDefaultFile("index.html");
-
+  
   server.onNotFound([](AsyncWebServerRequest *request){
     Serial.printf("NOT_FOUND: ");
     if(request->method() == HTTP_GET)
@@ -104,4 +103,6 @@ void setup(){
 }
 
 void loop(){
+  temp = analogRead(A0);
+  delay(10);
 }
