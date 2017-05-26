@@ -66,6 +66,12 @@
               document.body.style.backgroundColor = Alarm.color;
             }
           }, 1000/8);
+          setInterval(function(){
+            if(Alarm.alarming){
+              var audio = new Audio('alarm.mp3');
+              audio.play();
+            }
+          }, 1000);
         },
         start: function(){
           Alarm.alarming = true;
